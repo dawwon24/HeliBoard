@@ -6,6 +6,8 @@ import helium314.keyboard.event.HangulCombiner;
 import helium314.keyboard.latin.NgramContext;
 import helium314.keyboard.latin.SuggestedWords;
 import helium314.keyboard.latin.common.ComposedData;
+import helium314.keyboard.latin.common.Constants;
+import helium314.keyboard.latin.common.InputPointers;
 import helium314.keyboard.latin.makedict.WordProperty;
 import helium314.keyboard.latin.settings.SettingsValuesForSuggestion;
 
@@ -47,8 +49,17 @@ public class KoreanDictionary extends Dictionary {
     public ArrayList<SuggestedWords.SuggestedWordInfo> getSuggestions(ComposedData composedData,
                   NgramContext ngramContext, long proximityInfoHandle, SettingsValuesForSuggestion settingsValuesForSuggestion,
                   int sessionId, float weightForLocale, float[] inOutWeightOfLangModelVsSpatialModel) {
-        composedData = new ComposedData(composedData.mInputPointers,
-                composedData.mIsBatchMode, processInput(composedData.mTypedWord));
+        final String typedWord = processInput(composedData.mTypedWord);
+        InputPointers inputPointers = composedData.mInputPointers;
+        if (!composedData.mIsBatchMode) {
+            // Touch positions belong to compatibility jamo keys and don't line up with the decomposed
+            // typed word (e.g. 4 taps for 괜, but 3 jamo), so only the typed code points are used.
+            final int length = typedWord.codePointCount(0, typedWord.length());
+            inputPointers = new InputPointers(length);
+            for (int i = 0; i < length; i++)
+                inputPointers.addPointer(Constants.NOT_A_COORDINATE, Constants.NOT_A_COORDINATE, 0, 0);
+        }
+        composedData = new ComposedData(inputPointers, composedData.mIsBatchMode, typedWord);
         ArrayList<SuggestedWords.SuggestedWordInfo> suggestions = mDictionary.getSuggestions(composedData,
                 ngramContext, proximityInfoHandle, settingsValuesForSuggestion, sessionId,
                 weightForLocale, inOutWeightOfLangModelVsSpatialModel);

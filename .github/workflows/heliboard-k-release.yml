@@ -87,6 +87,6 @@ jobs:
           version=$(basename "$apk" | sed -E 's/^HeliBoard_(.*)-release\.apk$/\1/')-k${{ github.run_number }}
           tag="${{ steps.check.outputs.upstream }}-k${{ github.run_number }}"
           cp "$apk" "HeliBoard-K_${version}.apk"
-          gh release create "$tag" "HeliBoard-K_${version}.apk" --target custom \
+          gh release create "$tag" "HeliBoard-K_${version}.apk" -R "$GITHUB_REPOSITORY" --target custom \
             --title "HeliBoard K ${version}" \
             --notes "Based on upstream ${{ steps.check.outputs.upstream }}."

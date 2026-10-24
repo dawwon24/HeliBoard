@@ -408,6 +408,18 @@
     <string name="prefs_bottom_padding_scale">Bottom padding scale</string>
     <!-- Title of the setting for setting height of the bottom row -->
     <string name="prefs_bottom_row_scale">Bottom row scale</string>
+    <!-- Title of the setting for adjusting the number row height -->
+    <string name="prefs_number_row_scale">Number row scale</string>
+    <!-- Title of the setting for disabling symbols on long press of alphabet keys -->
+    <string name="long_press_symbols">Symbols on long press</string>
+    <!-- Description of the setting for disabling symbols on long press of alphabet keys -->
+    <string name="long_press_symbols_summary">Enter symbols by long pressing letter keys</string>
+    <!-- Title of the setting for entering Korean tense consonants by double tap -->
+    <string name="hangul_double_tap">Double tap for tense consonants</string>
+    <!-- Description of the setting for entering Korean tense consonants by double tap -->
+    <string name="hangul_double_tap_summary">Tap ㄱ ㄷ ㅂ ㅅ ㅈ twice quickly to enter ㄲ ㄸ ㅃ ㅆ ㅉ</string>
+    <!-- Title of the setting for the maximum delay between the two taps -->
+    <string name="hangul_double_tap_timeout">Double tap delay</string>
     <!-- Title of the setting for setting side padding -->
     <string name="prefs_side_padding_scale">Side padding scale</string>
     <!-- Title of the setting for adjusting font size on the keyboard -->

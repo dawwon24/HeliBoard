@@ -1,0 +1,92 @@
+name: HeliBoard K release
+# Applies the custom changes on top of the latest HeliBoard release, builds a signed APK
+# and publishes it as a GitHub release (picked up by Obtainium).
+# Release tags are <upstream tag>-k<run number>, e.g. v4.2-k12
+
+on:
+  schedule:
+    - cron: '0 18 * * *' # daily, 03:00 KST
+  push:
+    branches: [ custom ]
+    paths: [ 'app/**', '.github/workflows/heliboard-k-release.yml' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: heliboard-k-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: custom
+          fetch-depth: 0
+
+      - name: Check for new upstream release
+        id: check
+        run: |
+          git remote add upstream https://github.com/Helium314/HeliBoard.git
+          git fetch upstream --tags --quiet
+          latest=$(gh release view -R Helium314/HeliBoard --json tagName -q .tagName)
+          last=$(gh release list -R "$GITHUB_REPOSITORY" -L 1 --exclude-drafts --json tagName -q '.[0].tagName' || true)
+          echo "Latest upstream: $latest, last own release: $last"
+          echo "upstream=$latest" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "${last%-k*}" = "$latest" ]; then
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Apply custom changes onto upstream release
+        if: steps.check.outputs.build == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          latest="${{ steps.check.outputs.upstream }}"
+          base=$(git describe --tags --abbrev=0 --match 'v[0-9]*' --exclude '*-k*' HEAD)
+          echo "Custom branch base: $base"
+          if [ "$latest" != "$base" ]; then
+            git rebase --onto "$latest" "$base" HEAD
+          fi
+
+      - name: Set up JDK
+        if: steps.check.outputs.build == 'true'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - uses: gradle/actions/setup-gradle@v3
+        if: steps.check.outputs.build == 'true'
+
+      - name: Build signed APK
+        if: steps.check.outputs.build == 'true'
+        env:
+          HELIBOARD_K_BUILD: ${{ github.run_number }}
+          HELIBOARD_K_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          HELIBOARD_K_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          HELIBOARD_K_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.jks"
+          export HELIBOARD_K_KEYSTORE="$RUNNER_TEMP/release.jks"
+          chmod +x gradlew
+          ./gradlew assembleRelease
+          rm "$RUNNER_TEMP/release.jks"
+
+      - name: Publish release
+        if: steps.check.outputs.build == 'true'
+        run: |
+          apk=$(ls app/build/outputs/apk/release/*-release.apk | head -n 1)
+          version=$(basename "$apk" | sed -E 's/^HeliBoard_(.*)-release\.apk$/\1/')-k${{ github.run_number }}
+          tag="${{ steps.check.outputs.upstream }}-k${{ github.run_number }}"
+          cp "$apk" "HeliBoard-K_${version}.apk"
+          gh release create "$tag" "HeliBoard-K_${version}.apk" --target custom \
+            --title "HeliBoard K ${version}" \
+            --notes "Based on upstream ${{ steps.check.outputs.upstream }}."

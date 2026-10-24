@@ -86,6 +86,19 @@ class KeyboardParser(private val params: KeyboardParams, private val context: Co
                 row.forEach { it.mHeight *= if (i == keysInRows.lastIndex) bottomRowScale else otherRowScale }
             }
         }
+        // rescale number row without changing keyboard height
+        val numberRowScale = Settings.getValues().mNumberRowScale
+        if (numberRowScale != 1f && params.mId.element.isAlphaOrSymbol && params.mId.numberRowEnabled && keysInRows.size > 1) {
+            val rowHeights = keysInRows.map { row -> row.firstOrNull()?.mHeight ?: 0f }
+            val total = rowHeights.sum()
+            val numberRowHeight = rowHeights.first()
+            if (numberRowHeight > 0f && total > numberRowHeight) {
+                val otherRowScale = (total - numberRowHeight * numberRowScale) / (total - numberRowHeight)
+                keysInRows.forEachIndexed { i, row ->
+                    row.forEach { it.mHeight *= if (i == 0) numberRowScale else otherRowScale }
+                }
+            }
+        }
 
         return keysInRows
     }

@@ -82,6 +82,8 @@ fun AppearanceScreen(
             Settings.PREF_KEY_GAP_SCALE_PREFIX else null,
         Settings.PREF_KEYBOARD_HEIGHT_SCALE_PREFIX,
         Settings.PREF_BOTTOM_ROW_SCALE_PREFIX,
+        if (prefs.getBoolean(Settings.PREF_SHOW_NUMBER_ROW, Defaults.PREF_SHOW_NUMBER_ROW))
+            Settings.PREF_NUMBER_ROW_SCALE else null,
         Settings.PREF_BOTTOM_PADDING_SCALE_PREFIX,
         Settings.PREF_SIDE_PADDING_SCALE_PREFIX,
         Settings.PREF_SPACE_BAR_TEXT,
@@ -281,6 +283,15 @@ fun createAppearanceSettings(context: Context) = listOf(
             defaults = Defaults.PREF_BOTTOM_ROW_SCALE,
             range = 0.5f..2f,
             description = { "${(100 * it).toInt()}%" }
+        ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
+    },
+    Setting(context, Settings.PREF_NUMBER_ROW_SCALE, R.string.prefs_number_row_scale) { setting ->
+        SliderPreference(
+            name = setting.title,
+            key = setting.key,
+            default = Defaults.PREF_NUMBER_ROW_SCALE,
+            description = { "${(100 * it).toInt()}%" },
+            range = 0.5f..1.5f,
         ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
     },
     Setting(context, Settings.PREF_BOTTOM_PADDING_SCALE_PREFIX, R.string.prefs_bottom_padding_scale) { setting ->

@@ -272,6 +272,12 @@
     <string name="prefs_key_gap_scale">키 간격 크기</string>
     <string name="prefs_bottom_padding_scale">하단 공백 크기</string>
     <string name="prefs_bottom_row_scale">하단 행 크기</string>
+    <string name="prefs_number_row_scale">숫자 행 높이</string>
+    <string name="long_press_symbols">길게 눌러 특수문자 입력</string>
+    <string name="long_press_symbols_summary">글자 키를 길게 눌러 특수문자 입력</string>
+    <string name="hangul_double_tap">자음 두 번 눌러 된소리</string>
+    <string name="hangul_double_tap_summary">ㄱ ㄷ ㅂ ㅅ ㅈ을 빠르게 두 번 누르면 ㄲ ㄸ ㅃ ㅆ ㅉ 입력</string>
+    <string name="hangul_double_tap_timeout">된소리 연타 간격</string>
     <string name="prefs_side_padding_scale">측면 행 크기</string>
     <string name="prefs_font_scale">키보드 글꼴 크기</string>
     <string name="prefs_hint_font_scale">키 힌트 글꼴 크기</string>

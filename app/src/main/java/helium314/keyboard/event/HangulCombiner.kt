@@ -2,9 +2,11 @@
 
 package helium314.keyboard.event
 
+import android.os.SystemClock
 import helium314.keyboard.keyboard.internal.keyboard_parser.floris.KeyCode
 import helium314.keyboard.latin.common.Constants
 import helium314.keyboard.latin.common.isEmoji
+import helium314.keyboard.latin.settings.Settings
 import java.lang.StringBuilder
 import java.util.ArrayList
 
@@ -15,10 +17,17 @@ class HangulCombiner : Combiner {
     val history: MutableList<HangulSyllable> = mutableListOf()
     private val syllable: HangulSyllable? get() = history.lastOrNull()
 
+    // for entering tense consonants by tapping a consonant twice quickly (ㄱㄱ -> ㄲ)
+    private var lastConsonant = 0
+    private var lastConsonantTime = 0L
+    private var stateBeforeLastConsonant: Pair<String, List<HangulSyllable>>? = null
+
     override fun processEvent(previousEvents: ArrayList<Event>?, event: Event): Event {
         if (event.keyCode == KeyCode.SHIFT || isEmoji(event.codePoint)) return event
         // previously we only used the combiner if codePoint > 0x1100 or codePoint == -1, but looks here it's not necessary
         val event = HangulEventDecoder.decodeSoftwareKeyEvent(event)
+        if (Character.isWhitespace(event.codePoint) || event.isFunctionalKeyEvent)
+            clearDoubleTapState()
         if (Character.isWhitespace(event.codePoint)) {
             val text = combiningStateFeedback
             reset()
@@ -45,8 +54,8 @@ class HangulCombiner : Combiner {
             reset()
             return createEventChainFromSequence(text, event)
         } else {
+            val jamo = handleDoubleTap(event, HangulJamo.of(event.codePoint))
             val currentSyllable = syllable ?: HangulSyllable()
-            val jamo = HangulJamo.of(event.codePoint)
             if (!event.isCombining || jamo is HangulJamo.NonHangul) {
                 composingWord.append(currentSyllable.string)
                 composingWord.append(jamo.string)
@@ -187,6 +196,36 @@ class HangulCombiner : Combiner {
     override fun reset() {
         composingWord.setLength(0)
         history.clear()
+        clearDoubleTapState()
+    }
+
+    /** If the same consonant is tapped twice quickly, restores the state before the first tap and returns the tense consonant */
+    private fun handleDoubleTap(event: Event, jamo: HangulJamo): HangulJamo {
+        val settings = Settings.getValues()
+        val tense = TENSE_CONSONANTS[jamo.codePoint]
+        if (settings == null || !settings.mHangulDoubleTap || !event.isCombining || jamo !is HangulJamo.Consonant || tense == null) {
+            clearDoubleTapState()
+            return jamo
+        }
+        val now = SystemClock.uptimeMillis()
+        val previousState = stateBeforeLastConsonant
+        if (previousState != null && lastConsonant == jamo.codePoint && now - lastConsonantTime <= settings.mHangulDoubleTapTimeout) {
+            composingWord.setLength(0)
+            composingWord.append(previousState.first)
+            history.clear()
+            history.addAll(previousState.second)
+            clearDoubleTapState() // no triple tap
+            return HangulJamo.Consonant(tense)
+        }
+        stateBeforeLastConsonant = composingWord.toString() to history.toList()
+        lastConsonant = jamo.codePoint
+        lastConsonantTime = now
+        return jamo
+    }
+
+    private fun clearDoubleTapState() {
+        stateBeforeLastConsonant = null
+        lastConsonant = 0
     }
 
     sealed class HangulJamo {
@@ -280,6 +319,13 @@ class HangulCombiner : Combiner {
     }
 
     companion object {
+        private val TENSE_CONSONANTS = mapOf(
+                0x3131 to 0x3132, // ㄱ -> ㄲ
+                0x3137 to 0x3138, // ㄷ -> ㄸ
+                0x3142 to 0x3143, // ㅂ -> ㅃ
+                0x3145 to 0x3146, // ㅅ -> ㅆ
+                0x3148 to 0x3149, // ㅈ -> ㅉ
+        )
         val COMBINATION_TABLE_DUBEOLSIK = mapOf<Pair<Int, Int>, Int>(
                 0x1169 to 0x1161 to 0x116a,
                 0x1169 to 0x1162 to 0x116b,

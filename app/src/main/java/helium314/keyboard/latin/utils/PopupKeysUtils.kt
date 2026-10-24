@@ -8,6 +8,7 @@ import helium314.keyboard.keyboard.internal.PopupKeySpec
 import helium314.keyboard.keyboard.internal.keyboard_parser.floris.KeyLabel.rtlLabel
 import helium314.keyboard.keyboard.internal.keyboard_parser.floris.PopupSet
 import helium314.keyboard.latin.common.Constants.Separators
+import helium314.keyboard.latin.settings.Settings
 
 const val POPUP_KEYS_NUMBER = "number"
 private const val POPUP_KEYS_LANGUAGE_PRIORITY = "language_priority"
@@ -32,7 +33,7 @@ fun createPopupKeysArray(popupSet: PopupSet<*>?, params: KeyboardParams, label: 
         when (type) {
             POPUP_KEYS_NUMBER -> popupSet?.numberLabel?.let { popupKeys.add(it) }
             POPUP_KEYS_LAYOUT -> popupSet?.getPopupKeyLabels(params)?.let { popupKeys.addAll(it) }
-            POPUP_KEYS_SYMBOLS -> popupSet?.symbol?.let { popupKeys.add(it) }
+            POPUP_KEYS_SYMBOLS -> if (longPressSymbolsEnabled(params)) popupSet?.symbol?.let { popupKeys.add(it) }
             POPUP_KEYS_LANGUAGE -> params.mLocaleKeyboardInfos.getPopupKeys(label)?.let { popupKeys.addAll(it) }
             POPUP_KEYS_LANGUAGE_PRIORITY -> params.mLocaleKeyboardInfos.getPriorityPopupKeys(label)?.let { popupKeys.addAll(it) }
         }
@@ -81,7 +82,7 @@ private fun getHintText(popupSet: PopupSet<*>?, params: KeyboardParams, label: S
         when (type) {
             POPUP_KEYS_NUMBER -> popupSet?.numberLabel?.let { hintLabel = it }
             POPUP_KEYS_LAYOUT -> popupSet?.getPopupKeyLabels(params)?.let { hintLabel = it.firstOrNull() }
-            POPUP_KEYS_SYMBOLS -> popupSet?.symbol?.let { hintLabel = it }
+            POPUP_KEYS_SYMBOLS -> if (longPressSymbolsEnabled(params)) popupSet?.symbol?.let { hintLabel = it }
             POPUP_KEYS_LANGUAGE -> params.mLocaleKeyboardInfos.getPopupKeys(label)?.let { hintLabel = it.firstOrNull() }
             POPUP_KEYS_LANGUAGE_PRIORITY -> params.mLocaleKeyboardInfos.getPriorityPopupKeys(label)?.let { hintLabel = it.firstOrNull() }
         }
@@ -89,6 +90,10 @@ private fun getHintText(popupSet: PopupSet<*>?, params: KeyboardParams, label: S
     }
     return null
 }
+
+// symbol popups on alphabet keys can be disabled separately
+private fun longPressSymbolsEnabled(params: KeyboardParams) =
+    !params.mId.element.isAlphabet || Settings.getValues().mLongPressSymbols
 
 private fun transformLabel(label: String, params: KeyboardParams): String =
     if (label.startsWith("$$$")) { // currency keys, todo: handling is similar to textKeyData, could it be merged?

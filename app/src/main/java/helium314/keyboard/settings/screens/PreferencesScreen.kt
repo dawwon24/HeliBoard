@@ -48,6 +48,10 @@ fun PreferencesScreen(
         if (prefs.getBoolean(Settings.PREF_SHOW_HINTS, Defaults.PREF_SHOW_HINTS))
             Settings.PREF_POPUP_KEYS_HINT_ORDER else null,
         Settings.PREF_POPUP_KEYS_ORDER,
+        Settings.PREF_LONG_PRESS_SYMBOLS,
+        Settings.PREF_HANGUL_DOUBLE_TAP,
+        if (prefs.getBoolean(Settings.PREF_HANGUL_DOUBLE_TAP, Defaults.PREF_HANGUL_DOUBLE_TAP))
+            Settings.PREF_HANGUL_DOUBLE_TAP_TIMEOUT else null,
         Settings.PREF_SHOW_POPUP_HINTS,
         Settings.PREF_SHOW_TLD_POPUP_KEYS,
         Settings.PREF_POPUP_ON,
@@ -103,6 +107,22 @@ fun createPreferencesSettings(context: Context) = listOf(
     },
     Setting(context, Settings.PREF_POPUP_KEYS_ORDER, R.string.popup_order) {
         ReorderSwitchPreference(it, Defaults.PREF_POPUP_KEYS_ORDER)
+    },
+    Setting(context, Settings.PREF_LONG_PRESS_SYMBOLS, R.string.long_press_symbols, R.string.long_press_symbols_summary) {
+        SwitchPreference(it, Defaults.PREF_LONG_PRESS_SYMBOLS) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
+    },
+    Setting(context, Settings.PREF_HANGUL_DOUBLE_TAP, R.string.hangul_double_tap, R.string.hangul_double_tap_summary) {
+        SwitchPreference(it, Defaults.PREF_HANGUL_DOUBLE_TAP)
+    },
+    Setting(context, Settings.PREF_HANGUL_DOUBLE_TAP_TIMEOUT, R.string.hangul_double_tap_timeout) { setting ->
+        SliderPreference(
+            name = setting.title,
+            key = setting.key,
+            default = Defaults.PREF_HANGUL_DOUBLE_TAP_TIMEOUT,
+            description = { stringResource(R.string.abbreviation_unit_milliseconds, it.toString()) },
+            range = 100f..800f,
+            stepSize = 10,
+        )
     },
     Setting(
         context, Settings.PREF_SHOW_TLD_POPUP_KEYS, R.string.show_tld_popup_keys,

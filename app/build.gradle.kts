@@ -10,7 +10,7 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "helium314.keyboard"
+        applicationId = "helium314.keyboard.custom"
         minSdk = 21
         targetSdk = 37
         versionCode = 4201
@@ -22,8 +22,20 @@ android {
         proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
     }
 
+    // HeliBoard K: release signing from environment (set in CI or locally)
+    val kKeystore = System.getenv("HELIBOARD_K_KEYSTORE")
+    signingConfigs {
+        if (kKeystore != null) create("kRelease") {
+            storeFile = file(kKeystore)
+            storePassword = System.getenv("HELIBOARD_K_KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("HELIBOARD_K_KEY_ALIAS")
+            keyPassword = System.getenv("HELIBOARD_K_KEY_PASSWORD")
+        }
+    }
+
     buildTypes {
         release {
+            if (kKeystore != null) signingConfig = signingConfigs.getByName("kRelease")
             isMinifyEnabled = true
             isShrinkResources = false
             isDebuggable = false
@@ -65,6 +77,12 @@ android {
                 variant.proguardFiles.add(project.layout.buildDirectory.file(project.buildFile.parent + "/proguard-rules.pro"))
             }
             variant.outputs.forEach { output ->
+                // HeliBoard K: build number from CI, so each build is an update
+                val kBuild = System.getenv("HELIBOARD_K_BUILD")?.toIntOrNull()
+                if (kBuild != null) {
+                    output.versionCode.set(defaultConfig.versionCode!! * 10000 + kBuild)
+                    output.versionName.set("${defaultConfig.versionName}-k$kBuild")
+                }
                 if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
                     output.outputFileName = "HeliBoard_${defaultConfig.versionName}-${variant.buildType}.apk"
                 }

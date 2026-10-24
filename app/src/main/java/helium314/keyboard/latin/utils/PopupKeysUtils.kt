@@ -6,6 +6,7 @@ import helium314.keyboard.keyboard.internal.KeySpecParser
 import helium314.keyboard.keyboard.internal.KeyboardParams
 import helium314.keyboard.keyboard.internal.PopupKeySpec
 import helium314.keyboard.keyboard.internal.keyboard_parser.floris.KeyLabel.rtlLabel
+import helium314.keyboard.keyboard.internal.keyboard_parser.floris.LabelIndependentPopups
 import helium314.keyboard.keyboard.internal.keyboard_parser.floris.PopupSet
 import helium314.keyboard.latin.common.Constants.Separators
 import helium314.keyboard.latin.settings.Settings
@@ -34,8 +35,10 @@ fun createPopupKeysArray(popupSet: PopupSet<*>?, params: KeyboardParams, label: 
             POPUP_KEYS_NUMBER -> popupSet?.numberLabel?.let { popupKeys.add(it) }
             POPUP_KEYS_LAYOUT -> popupSet?.getPopupKeyLabels(params)?.let { popupKeys.addAll(it) }
             POPUP_KEYS_SYMBOLS -> if (longPressSymbolsEnabled(params)) popupSet?.symbol?.let { popupKeys.add(it) }
-            POPUP_KEYS_LANGUAGE -> params.mLocaleKeyboardInfos.getPopupKeys(label)?.let { popupKeys.addAll(it) }
-            POPUP_KEYS_LANGUAGE_PRIORITY -> params.mLocaleKeyboardInfos.getPriorityPopupKeys(label)?.let { popupKeys.addAll(it) }
+            POPUP_KEYS_LANGUAGE -> if (popupSet !is LabelIndependentPopups)
+                params.mLocaleKeyboardInfos.getPopupKeys(label)?.let { popupKeys.addAll(it) }
+            POPUP_KEYS_LANGUAGE_PRIORITY -> if (popupSet !is LabelIndependentPopups)
+                params.mLocaleKeyboardInfos.getPriorityPopupKeys(label)?.let { popupKeys.addAll(it) }
         }
     }
     if (!popupKeysDelegate.isInitialized() || popupKeys.isEmpty())
@@ -83,8 +86,10 @@ private fun getHintText(popupSet: PopupSet<*>?, params: KeyboardParams, label: S
             POPUP_KEYS_NUMBER -> popupSet?.numberLabel?.let { hintLabel = it }
             POPUP_KEYS_LAYOUT -> popupSet?.getPopupKeyLabels(params)?.let { hintLabel = it.firstOrNull() }
             POPUP_KEYS_SYMBOLS -> if (longPressSymbolsEnabled(params)) popupSet?.symbol?.let { hintLabel = it }
-            POPUP_KEYS_LANGUAGE -> params.mLocaleKeyboardInfos.getPopupKeys(label)?.let { hintLabel = it.firstOrNull() }
-            POPUP_KEYS_LANGUAGE_PRIORITY -> params.mLocaleKeyboardInfos.getPriorityPopupKeys(label)?.let { hintLabel = it.firstOrNull() }
+            POPUP_KEYS_LANGUAGE -> if (popupSet !is LabelIndependentPopups)
+                params.mLocaleKeyboardInfos.getPopupKeys(label)?.let { hintLabel = it.firstOrNull() }
+            POPUP_KEYS_LANGUAGE_PRIORITY -> if (popupSet !is LabelIndependentPopups)
+                params.mLocaleKeyboardInfos.getPriorityPopupKeys(label)?.let { hintLabel = it.firstOrNull() }
         }
         if (hintLabel != null) return hintLabel
     }

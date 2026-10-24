@@ -356,6 +356,7 @@ sealed interface KeyData : AbstractKeyData {
         }
         var newLabelFlags = labelFlags or additionalLabelFlags or getAdditionalLabelFlags(params)
         val newPopupKeys = popup.merge(getAdditionalPopupKeys(params))
+            .let { if (groupId == GROUP_NO_DEFAULT_POPUP) LabelIndependentPopups(it) else it }
 
         val background = when (type) {
             KeyType.CHARACTER, KeyType.NUMERIC -> Key.BACKGROUND_TYPE_NORMAL

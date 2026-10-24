@@ -53,3 +53,13 @@ class SimplePopups(val popupKeys: Collection<String>?) : PopupSet<AbstractKeyDat
     override fun getPopupKeyLabels(params: KeyboardParams) = popupKeys?.map { KeyLabel.keyLabelToActualLabel(it, params) }
     override fun isEmpty(): Boolean = popupKeys.isNullOrEmpty()
 }
+
+/** popups for keys that should not get additional popups based on the label, e.g. language popups */
+class LabelIndependentPopups(private val popups: PopupSet<*>) : PopupSet<AbstractKeyData>() {
+    init {
+        numberLabel = popups.numberLabel
+        symbol = popups.symbol
+    }
+    override fun getPopupKeyLabels(params: KeyboardParams) = popups.getPopupKeyLabels(params)
+    override fun isEmpty(): Boolean = popups.isEmpty()
+}

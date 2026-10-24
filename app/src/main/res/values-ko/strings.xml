@@ -120,6 +120,8 @@
     <string name="show_hints_summary">길게 누르기 힌트 표시</string>
     <string name="prefs_long_press_keyboard_to_change_lang">스페이스로 입력 방법 변경</string>
     <string name="prefs_long_press_keyboard_to_change_lang_summary">스페이스를 길게 눌러 입력 방법 메뉴 표시</string>
+    <string name="prefs_long_press_language_key_to_change_lang">언어 전환 키로 입력 방법 변경</string>
+    <string name="prefs_long_press_language_key_to_change_lang_summary">언어 전환 키를 길게 눌러 입력 방법 메뉴 표시</string>
     <string name="prefs_keyboard_height_scale">키보드 높이</string>
     <string name="number_row">숫자 행</string>
     <string name="day_night_mode">자동 밤낮 모드</string>

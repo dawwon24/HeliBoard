@@ -1170,7 +1170,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
             sListener.onReleaseKey(popupKeyCode, false);
             return;
         }
-        if (code == KeyCode.LANGUAGE_SWITCH
+        if ((code == KeyCode.LANGUAGE_SWITCH && Settings.getValues().mLanguageKeyForLangChange)
                 || (code == Constants.CODE_SPACE && key.getPopupKeys() == null && Settings.getValues().mSpaceForLangChange)
         ) {
             // Long pressing the space key invokes IME switcher dialog.

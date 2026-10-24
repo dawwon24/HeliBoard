@@ -72,6 +72,7 @@ fun AdvancedSettingsScreen(
             Settings.PREF_TOUCHPAD_EDGE_SCROLL else null,
         Settings.PREF_DELETE_SWIPE,
         Settings.PREF_SPACE_TO_CHANGE_LANG,
+        Settings.PREF_LANGUAGE_KEY_TO_CHANGE_LANG,
         Settings.PREFS_LONG_PRESS_SYMBOLS_FOR_NUMPAD,
         Settings.PREF_ENABLE_EMOJI_ALT_PHYSICAL_KEY,
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) Settings.PREF_SHOW_SETUP_WIZARD_ICON else null,
@@ -165,6 +166,12 @@ fun createAdvancedSettings(context: Context) = listOf(
         R.string.prefs_long_press_keyboard_to_change_lang_summary)
     {
         SwitchPreference(it, Defaults.PREF_SPACE_TO_CHANGE_LANG)
+    },
+    Setting(context, Settings.PREF_LANGUAGE_KEY_TO_CHANGE_LANG,
+        R.string.prefs_long_press_language_key_to_change_lang,
+        R.string.prefs_long_press_language_key_to_change_lang_summary)
+    {
+        SwitchPreference(it, Defaults.PREF_LANGUAGE_KEY_TO_CHANGE_LANG) { KeyboardSwitcher.getInstance().reloadKeyboard() }
     },
     Setting(context, Settings.PREFS_LONG_PRESS_SYMBOLS_FOR_NUMPAD, R.string.prefs_long_press_symbol_for_numpad) {
         SwitchPreference(it, Defaults.PREFS_LONG_PRESS_SYMBOLS_FOR_NUMPAD)

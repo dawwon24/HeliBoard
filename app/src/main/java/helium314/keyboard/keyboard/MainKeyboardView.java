@@ -718,7 +718,7 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
             if (key.isLongPressEnabled() && mHasMultipleEnabledIMEsOrSubtypes && Settings.getValues().mSpaceForLangChange) {
                 drawKeyPopupHint(key, canvas, paint, params);
             }
-        } else if (code == KeyCode.LANGUAGE_SWITCH) {
+        } else if (code == KeyCode.LANGUAGE_SWITCH && Settings.getValues().mLanguageKeyForLangChange) {
             drawKeyPopupHint(key, canvas, paint, params);
         }
     }

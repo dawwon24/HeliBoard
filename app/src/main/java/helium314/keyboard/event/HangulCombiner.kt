@@ -17,10 +17,10 @@ class HangulCombiner : Combiner {
     val history: MutableList<HangulSyllable> = mutableListOf()
     private val syllable: HangulSyllable? get() = history.lastOrNull()
 
-    // for entering tense consonants by tapping a consonant twice quickly (ㄱㄱ -> ㄲ)
-    private var lastConsonant = 0
-    private var lastConsonantTime = 0L
-    private var stateBeforeLastConsonant: Pair<String, List<HangulSyllable>>? = null
+    // for entering tense consonants and ㅒ ㅖ by tapping a jamo twice quickly (ㄱㄱ -> ㄲ, ㅐㅐ -> ㅒ)
+    private var lastJamo = 0
+    private var lastJamoTime = 0L
+    private var stateBeforeLastJamo: Pair<String, List<HangulSyllable>>? = null
 
     override fun processEvent(previousEvents: ArrayList<Event>?, event: Event): Event {
         if (event.keyCode == KeyCode.SHIFT || isEmoji(event.codePoint)) return event
@@ -199,33 +199,34 @@ class HangulCombiner : Combiner {
         clearDoubleTapState()
     }
 
-    /** If the same consonant is tapped twice quickly, restores the state before the first tap and returns the tense consonant */
+    /** If the same jamo is tapped twice quickly, restores the state before the first tap and returns the double tap jamo */
     private fun handleDoubleTap(event: Event, jamo: HangulJamo): HangulJamo {
         val settings = Settings.getValues()
-        val tense = TENSE_CONSONANTS[jamo.codePoint]
-        if (settings == null || !settings.mHangulDoubleTap || !event.isCombining || jamo !is HangulJamo.Consonant || tense == null) {
+        val doubled = DOUBLE_TAP_JAMO[jamo.codePoint]
+        if (settings == null || !settings.mHangulDoubleTap || !event.isCombining
+                || (jamo !is HangulJamo.Consonant && jamo !is HangulJamo.Vowel) || doubled == null) {
             clearDoubleTapState()
             return jamo
         }
         val now = SystemClock.uptimeMillis()
-        val previousState = stateBeforeLastConsonant
-        if (previousState != null && lastConsonant == jamo.codePoint && now - lastConsonantTime <= settings.mHangulDoubleTapTimeout) {
+        val previousState = stateBeforeLastJamo
+        if (previousState != null && lastJamo == jamo.codePoint && now - lastJamoTime <= settings.mHangulDoubleTapTimeout) {
             composingWord.setLength(0)
             composingWord.append(previousState.first)
             history.clear()
             history.addAll(previousState.second)
             clearDoubleTapState() // no triple tap
-            return HangulJamo.Consonant(tense)
+            return HangulJamo.of(doubled)
         }
-        stateBeforeLastConsonant = composingWord.toString() to history.toList()
-        lastConsonant = jamo.codePoint
-        lastConsonantTime = now
+        stateBeforeLastJamo = composingWord.toString() to history.toList()
+        lastJamo = jamo.codePoint
+        lastJamoTime = now
         return jamo
     }
 
     private fun clearDoubleTapState() {
-        stateBeforeLastConsonant = null
-        lastConsonant = 0
+        stateBeforeLastJamo = null
+        lastJamo = 0
     }
 
     sealed class HangulJamo {
@@ -319,12 +320,14 @@ class HangulCombiner : Combiner {
     }
 
     companion object {
-        private val TENSE_CONSONANTS = mapOf(
+        private val DOUBLE_TAP_JAMO = mapOf(
                 0x3131 to 0x3132, // ㄱ -> ㄲ
                 0x3137 to 0x3138, // ㄷ -> ㄸ
                 0x3142 to 0x3143, // ㅂ -> ㅃ
                 0x3145 to 0x3146, // ㅅ -> ㅆ
                 0x3148 to 0x3149, // ㅈ -> ㅉ
+                0x3150 to 0x3152, // ㅐ -> ㅒ
+                0x3154 to 0x3156, // ㅔ -> ㅖ
         )
         val COMBINATION_TABLE_DUBEOLSIK = mapOf<Pair<Int, Int>, Int>(
                 0x1169 to 0x1161 to 0x116a,

@@ -419,9 +419,9 @@
     <!-- Description of the setting for disabling symbols on long press of alphabet keys -->
     <string name="long_press_symbols_summary">Enter symbols by long pressing letter keys</string>
     <!-- Title of the setting for entering Korean tense consonants by double tap -->
-    <string name="hangul_double_tap">Double tap for tense consonants</string>
+    <string name="hangul_double_tap">Double tap for tense consonants and ㅒ ㅖ</string>
     <!-- Description of the setting for entering Korean tense consonants by double tap -->
-    <string name="hangul_double_tap_summary">Tap ㄱ ㄷ ㅂ ㅅ ㅈ twice quickly to enter ㄲ ㄸ ㅃ ㅆ ㅉ</string>
+    <string name="hangul_double_tap_summary">Tap ㄱ ㄷ ㅂ ㅅ ㅈ ㅐ ㅔ twice quickly to enter ㄲ ㄸ ㅃ ㅆ ㅉ ㅒ ㅖ</string>
     <!-- Title of the setting for the maximum delay between the two taps -->
     <string name="hangul_double_tap_timeout">Double tap delay</string>
     <!-- Title of the setting for setting side padding -->
